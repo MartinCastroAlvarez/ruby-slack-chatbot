@@ -2,7 +2,7 @@
 
 class Vallerie
 
-    @@version = 2
+    @@version = 3
     @@SIMPLE_ANSWER = 'simple_answer'
     @@LEARNING = [
         "Maybe you can say: ",
@@ -16,17 +16,28 @@ class Vallerie
         "You can also say: ",
         "you can also say: ",
     ]
+
+    # A list of positive words that Vallerie uses to 
+    # determine whether a message is positive or negative.
     @@POSITIVE = [
-        "like",
-        "love",
-        "cool",
+        "like", "love", "cool", "peace", "enjoy", "joy", "trust", "witty",
+        "awesome", "legit", "great", "liked", "loved", "nice", "good",
+        "masterfully", "magnificent", "thrilling", "enaged", "engaged",
+        "engaging", "super", "superb", "engages", "neat", "best", "spectacle",
+        "spectacular", "smart", "charming", "success", "successful", "want",
+        "fantastic", "divine", "beautiful", "pretty", "attractive", "goodlooking",
+        "brilliant", "immersive", "smooth", "admire", "admired", "admires",
+        "breathtaking", "funny", "funnier", "funniest", "thoughtful", "hilarious",
     ]
+
+    # A list of negative words that Vallerie uses to 
+    # determine whether a message is positive or negative.
     @@NEGATIVE = [
-        "sucks",
-        "bad",
-        "hate",
-        "disgust",
-        "terrible",
+        "sucks", "terrible", "awful", "bored", "bore", "boring", "lame", "bitch",
+        "bad", "suck", "crap", "hideous", "shameful", "ashamed", "wasted",
+        "don't", "merely", "forgettable", "garbage", "trash", "hated", "dumb",
+        "doesn't", "dumbest", "plotholes", "meh", "fuck", "faggot", "asshole",
+        "not", "won't", "hate", "disgust", "terrible", "stupid", "idiot",
     ]
 
     def initialize()
@@ -44,19 +55,19 @@ class Vallerie
         # Get (or create) one person from database.
         if not @people.key?(person)
             @people[person] = {}
-            @people[person]["familiarity"] = 1
-            @people[person]["affinity"] = 1
+            @people[person]["familiarity"] = 1.0
+            @people[person]["affinity"] = 1.0
         end
         return @people[person]
     end
 
     def getFamiliarity(person)
-        # Increase familiarity with one person.
+        # Get familiarity with a person.
         return self.getPerson(person)["familiarity"]
     end
 
     def getAffinity(person)
-        # Increase affinity with one person.
+        # Get affinity with a person.
         return self.getPerson(person)["affinity"]
     end
 
@@ -65,23 +76,23 @@ class Vallerie
         self.getPerson(person)["familiarity"] *= 1.1
     end
 
-    def increaseAffinity(person)
+    def increaseAffinity(person, positivity=1)
         # Increase affinity with one person.
-        self.getPerson(person)["affinity"] *= 1.1
+        self.getPerson(person)["affinity"] *= 1.0 + (0.1 + positivity.abs)
     end
 
-    def decreaseAffinity(person)
+    def decreaseAffinity(person, negativity)
         # Decrease affinity with one person.
-        self.getPerson(person)["affinity"] /= 1.5
+        self.getPerson(person)["affinity"] /= 1.0 + (0.5 + negativity.abs)
     end
 
     def getAverageFamiliarity()
         # Get average familiarity for all people.
-        total = 0
-        count = 0
+        total = 0.0
+        count = 0.0
         @people.each do |name, person|
             total += person['familiarity']
-            count += 1
+            count += 1.0
         end
         if count > 0
             return total / count
@@ -92,16 +103,16 @@ class Vallerie
 
     def getAverageAffinity()
         # Get average affinity for all people.
-        total = 0
-        count = 0
+        total = 0.0
+        count = 0.0
         @people.each do |name, person|
             total += person['affinity']
-            count += 1
+            count += 1.0
         end
         if count > 0
             return total / count
         else
-            return 0
+            return 0.0
         end
     end
 
@@ -137,7 +148,7 @@ class Vallerie
         # Send negative feedback about last answer.
         self.getAnswer(message, answer)['social_acceptance'] -= self.getInfluence(person)
 	if self.getAnswer(message, answer)['social_acceptance'] <= 0
-            self.getAnswer(message, answer)['social_acceptance'] = 0
+            self.getAnswer(message, answer)['social_acceptance'] = 0.0
         end
     end
 
@@ -156,10 +167,10 @@ class Vallerie
     def getBestAnswer(message, person) 
         # Provide an answer for that question with a % of reliability.
         response = {}
-        _total = 0
+        _total = 0.0
         response['isIA'] = false
-        response['reliability'] = 100
-        response['social_acceptance'] = 0
+        response['reliability'] = 100.0
+        response['social_acceptance'] = 0.0
         response['message'] = [
             "Mmm... what do you think I should say?",
             "I don't know! Do you have any suggestions?",
@@ -168,27 +179,26 @@ class Vallerie
         self.getMessage(message)['answers'].each do |answer, a|
             if a['social_acceptance'] > 0
                 # TODO: Multiple social_acceptance x n if Vallerie likes this person.
-                _total = _total + a['social_acceptance']
+                _total = _total + a['social_acceptance'] + self.getInfluence(a['creator']) / 100.0
             end
         end
         _rand = rand(0..._total)
         self.getMessage(message)['answers'].each do |answer, a|
             if a['social_acceptance'] >= 0
-                if _rand < a['social_acceptance']
+                if _rand < (a['social_acceptance'] + self.getInfluence(a['creator']) / 100.0)
                     response['message'] = a['message']
-                    # TODO: Multiple social_acceptance x n if Vallerie likes this person.
                     response['social_acceptance'] = a['social_acceptance']
                     response['isIA'] = true
                     break
                 end
-                _rand = _rand - a['social_acceptance']
+                _rand = _rand - a['social_acceptance'] - self.getInfluence(a['creator']) / 100.0
             end
         end
         if response['isIA']
             if _total > 0
-                response['reliability'] = 100 * response['social_acceptance'] / _total
+                response['reliability'] = response['social_acceptance'] / _total
             else
-                response['reliability'] = 0
+                response['reliability'] = 0.0
             end
         end
         return response
@@ -218,28 +228,28 @@ class Vallerie
         return message
     end
 
-    def isPositive(message)
+    def isPositiveOrNegative(message)
         # Return true if message is positive.
         # TODO: Learn positive messages.
         # TODO: Implement some Natural Language parser.
+        _len = message.split.size
+        _found = 0.0
+        _message = message.downcase  
         for i in 0...@@POSITIVE.size
-            if message.include? @@POSITIVE[i]
-                return true
+            if _message.include? @@POSITIVE[i]
+                _found += 1.0
             end
         end
-        return false
-    end
-
-    def isNegative(message)
-        # Return true if message is positive.
-        # TODO: Learn negative messages.
-        # TODO: Implement some Natural Language parser.
         for i in 0...@@NEGATIVE.size
-            if message.include? @@NEGATIVE[i]
-                return true
+            if _message.include? @@NEGATIVE[i]
+                _found -= 3.0
             end
         end
-        return false
+        if _len > 0
+            return _found / _len
+        else
+            return 0
+        end
     end
 
     def tokenizer(message)
@@ -279,75 +289,36 @@ class Vallerie
         self.increaseFamiliarity(person)
 
         # Evaluate if message is positive or negative.
-        _isPositive = false
-        _isNegative = false
-        if self.isPositive(cleaned)
-            _isPositive = true
-        elsif self.isNegative(cleaned)
-            _isNegative = true
+        _isPositiveOrNegative = self.isPositiveOrNegative(cleaned)
+        _minRelevance = 0.2
+        if _isPositiveOrNegative > _minRelevance
+            self.increaseAffinity(person, _isPositiveOrNegative)
+        elsif _isPositiveOrNegative > 0.2
+            self.decreaseAffinity(person, _isPositiveOrNegative)
         end
 
         # Teach Vallerie a new answer?
-        if self.isLearningSuggestion(message)
-            
-            # Action is: Learning.
-            if self.getLastMessage()
-                self.teach(self.getLastMessage(), cleaned, person)
-                self.increaseAffinity(person)
-                return [
-                    "I will consider that next time!",
-                    "Gotcha!",
-                    "Thanks!!",
-                ].sample
-            else
-                self.decreaseAffinity(person)
-                return [
-                    "I really don't know what you are talking about!",
-                    "You haven't asked anything yet!",
-                ].sample
-            end
-
-        elsif _isPositive or _isNegative
-
-            # Action is Feedback.
-            if self.getLastMessage() and self.getLastAnswer()
-                # Send positive or negative feedback about last answer or question.
-                if _isPositive
-                    self.sendPositiveFeedback(self.getLastMessage(), self.getLastAnswer(), person)
-                    self.increaseAffinity(person)
-                    return [
-                        "Thanks you! I like it!",
-                        "Sounds good!",
-                    ].sample
-                else _isNegative
-                    self.sendNegativeFeedback(self.getLastMessage(), self.getLastAnswer(), person)
-                    self.decreaseAffinity(person)
-                    return [
-                        "I will take care of what I say next time...",
-                        "Sorry, I didn't know it was so rude...",
-                    ].sample
-                end
-            else
-                # Like or dislike a bit more that person.
-                if _isPositive
-                    self.increaseAffinity(person)
-                    return [
-                        "Thank you!!!",
-                        "You are really nice!",
-                        ":)",
-                    ].sample
-                else _isNegative
-                    self.decreaseAffinity(person)
-                    return [
-                        "Not nice!",
-                        "Uhm!",
-                        "...",
-                    ].sample
-                end
-            end
-
+        if self.getLastMessage() and self.isLearningSuggestion(message)
+            self.teach(self.getLastMessage(), cleaned, person)
+            self.increaseAffinity(person)
+            return [
+                "I will consider that next time!",
+                "Gotcha!",
+                "I like it!",
+                "I appreciate that!",
+                "Thanks!!",
+            ].sample
         end
-        # End of Learning or Feedback actions.
+
+        # Send Feedback about last answer..
+        if self.getLastMessage() and self.getLastAnswer()
+            # Send positive or negative feedback about last answer or question.
+            if _isPositiveOrNegative > _minRelevance
+                self.sendPositiveFeedback(self.getLastMessage(), self.getLastAnswer(), person)
+            elsif _isPositiveOrNegative < -1 * _minRelevance
+                self.sendNegativeFeedback(self.getLastMessage(), self.getLastAnswer(), person)
+            end
+        end
 
         # Reset last message and answer.
         self.setLastMessage(cleaned)
@@ -357,7 +328,7 @@ class Vallerie
         response = self.getBestAnswer(cleaned, person)
         if response['isIA']
             self.setLastAnswer(response["message"])
-            if response['reliability'] < 30
+            if response['reliability'] < 0.3
                 doubt = [
                     "I am not completely sure, but",
                     "Not sure, but",
@@ -379,14 +350,18 @@ def say(v, person, message)
 end
 v = Vallerie.new()
 say(v, "martin", "What is your favorite color?")
-say(v, "martin", "Maybe you can say: I prefer Blue!")
+say(v, "martin", "Maybe you can say: I like Blue!")
 say(v, "martin", "What is your favorite color?")
 say(v, "alejandro", "I hate it!")
-say(v, "martin", "I like it!")
-say(v, "martin", "I like it!")
-say(v, "martin", "I like it!")
-say(v, "martin", "I like it!")
-say(v, "martin", "I like it!")
+say(v, "alejandro", "You stupid!")
 say(v, "alejandro", "What is your favorite color?")
 say(v, "castro", "You can also say: My favorite color is Red!")
+say(v, "castro", "You can also say: Green is the best!")
+say(v, "martin", "What is your favorite color?")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "You can also say: What about yellow?")
 say(v, "martin", "What is your favorite color?")
