@@ -13,6 +13,8 @@ class Vallerie
         "you may also say: ",
         "You can say: ",
         "you can say: ",
+        "You can also say: ",
+        "you can also say: ",
     ]
     @@POSITIVE = [
         "like",
@@ -22,6 +24,8 @@ class Vallerie
     @@NEGATIVE = [
         "sucks",
         "bad",
+        "hate",
+        "disgust",
         "terrible",
     ]
 
@@ -121,19 +125,19 @@ class Vallerie
 
     def getAnswer(message, answer)
         # Return reference to one answer.
-        return self.getMessage(message)[answer]
+        return self.getMessage(message)['answers'][answer]
     end
 
     def sendPositiveFeedback(message, answer, person)
         # Send positive feedback about last answer.
-        self.getMessage(message)[answer] += self.getInfluence(person)
+        self.getAnswer(message, answer)['social_acceptance'] += self.getInfluence(person)
     end
 
     def sendNegativeFeedback(message, answer, person)
         # Send negative feedback about last answer.
-        self.getMessage(message)[answer]['social_acceptance'] -= self.getInfluence(person)
+        self.getAnswer(message, answer)['social_acceptance'] -= self.getInfluence(person)
 	if self.getAnswer(message, answer)['social_acceptance'] <= 0
-            self.getMessage(message)[answer]['social_acceptance'] = 0
+            self.getAnswer(message, answer)['social_acceptance'] = 0
         end
     end
 
@@ -146,6 +150,7 @@ class Vallerie
             self.getMessage(message)['answers'][answer]['creator'] = person
             self.getMessage(message)['answers'][answer]['message'] = answer
         end
+        self.sendPositiveFeedback(message, answer, person)
     end
 
     def getBestAnswer(message, person) 
@@ -168,14 +173,16 @@ class Vallerie
         end
         _rand = rand(0..._total)
         self.getMessage(message)['answers'].each do |answer, a|
-            if a['social_acceptance'] >= 0 and _rand < a['social_acceptance']
-                response['message'] = a['message']
-                # TODO: Multiple social_acceptance x n if Vallerie likes this person.
-                response['social_acceptance'] = a['social_acceptance']
-                response['isIA'] = true
-                break
+            if a['social_acceptance'] >= 0
+                if _rand < a['social_acceptance']
+                    response['message'] = a['message']
+                    # TODO: Multiple social_acceptance x n if Vallerie likes this person.
+                    response['social_acceptance'] = a['social_acceptance']
+                    response['isIA'] = true
+                    break
+                end
+                _rand = _rand - a['social_acceptance']
             end
-            _rand = _rand - weight
         end
         if response['isIA']
             if _total > 0
@@ -214,6 +221,7 @@ class Vallerie
     def isPositive(message)
         # Return true if message is positive.
         # TODO: Learn positive messages.
+        # TODO: Implement some Natural Language parser.
         for i in 0...@@POSITIVE.size
             if message.include? @@POSITIVE[i]
                 return true
@@ -224,6 +232,8 @@ class Vallerie
 
     def isNegative(message)
         # Return true if message is positive.
+        # TODO: Learn negative messages.
+        # TODO: Implement some Natural Language parser.
         for i in 0...@@NEGATIVE.size
             if message.include? @@NEGATIVE[i]
                 return true
@@ -311,10 +321,10 @@ class Vallerie
                     ].sample
                 else _isNegative
                     self.sendNegativeFeedback(self.getLastMessage(), self.getLastAnswer(), person)
-                    self.decreateAffinity(person)
+                    self.decreaseAffinity(person)
                     return [
                         "I will take care of what I say next time...",
-                        "Sorry, I didn't know it was rude...",
+                        "Sorry, I didn't know it was so rude...",
                     ].sample
                 end
             else
@@ -327,7 +337,7 @@ class Vallerie
                         ":)",
                     ].sample
                 else _isNegative
-                    self.decreateAffinity(person)
+                    self.decreaseAffinity(person)
                     return [
                         "Not nice!",
                         "Uhm!",
@@ -371,29 +381,12 @@ v = Vallerie.new()
 say(v, "martin", "What is your favorite color?")
 say(v, "martin", "Maybe you can say: I prefer Blue!")
 say(v, "martin", "What is your favorite color?")
-
-# puts v.teach("martin", "My favorite color is Red!")
-# puts v.teach("martin", "Green is the best!")
-# puts v.positiveFeedback("martin")
-# puts v.positiveFeedback("martin")
-# puts v.positiveFeedback("martin")
-# puts v.negativeFeedback("castro")
-# puts v.negativeFeedback("castro")
-# puts v.negativeFeedback("castro")
-# puts v.negativeFeedback("castro")
-# puts v.answer("martin", "What is your favorite color?")
-# puts v.positiveFeedback("castro")
-# puts v.positiveFeedback("castro")
-# puts v.positiveFeedback("castro")
-# puts v.answer("castro", "What is your favorite color?")
-# puts v.negativeFeedback("castro")
-# puts v.negativeFeedback("castro")
-# puts v.answer("castro", "What is your favorite color?")
-# puts v.negativeFeedback("martin")
-# puts v.negativeFeedback("castro")
-# puts v.teach("castro", "I don't really know!")
-# puts v.negativeFeedback("castro")
-# puts v.positiveFeedback("martin")
-# puts v.answer("martin", "What is your favorite color?")
-# puts v.positiveFeedback("castro")
-# puts v.answer("castro", "What is your favorite color?")
+say(v, "alejandro", "I hate it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "martin", "I like it!")
+say(v, "alejandro", "What is your favorite color?")
+say(v, "castro", "You can also say: My favorite color is Red!")
+say(v, "martin", "What is your favorite color?")
