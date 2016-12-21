@@ -1,0 +1,9 @@
+GEM
+  specs:
+    nlp-pure (0.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  nlp-pure
