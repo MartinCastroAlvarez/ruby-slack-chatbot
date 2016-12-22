@@ -1,10 +1,13 @@
+require_relative "messages"
+require_relative "people"
 
 
 class Vallerie
 
     @@version = 4
 
-    attr_reader :lastMessage :lastAnswer :people :answers :answersInverted
+    attr_reader :lastMessage
+    attr_reader :lastAnswer
 
     def initialize()
         @lastMessage = nil
@@ -12,20 +15,6 @@ class Vallerie
         @answers = {}
         @answersInverted = {}
         @people = {}
-    end
-
-    # ---------------------------------------------------------
-    # Social Influence.
-    # ---------------------------------------------------------
-
-    def knowBetter(person, connotation=0):
-        # Know this person a bit more.
-        getPerson(person).knowBetter(connotation)
-    end
-
-    def getInfluence(person)
-        # Get influence from a person.
-        return getPerson(person).getInfluence() / (getAverageAffinity() * getAverageFamiliarity())
     end
 
     # ---------------------------------------------------------

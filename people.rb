@@ -2,7 +2,6 @@
 
 class Person
 
-    # Database.
     @@db = {}
 
     # Classmethod
@@ -12,12 +11,6 @@ class Person
             @@db[person] = Person(person)
         end
         return @@db[person]
-    end
-
-    # Classmethod
-    def self.interact(person, connotation=0)
-        # Interact with one person.
-        return Person.get(person).interact(connotation)
     end
 
     # Classmethod
@@ -95,6 +88,6 @@ if __FILE__ == $0
     p2.interact(1)
     puts p2.toString()
     puts Person.get("martin").toString()
-    Person.interact("martin", -0.5)
+    Person.get("martin").interact(-0.5)
     puts p1.toString()
 end
