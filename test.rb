@@ -1,3 +1,9 @@
-a = "Maybe you can say: askdjfhasdhfhasdf"
-a = a.sub("Maybe you can say: ", "")
-puts a
+class A
+    attr_reader :a
+    def initialize()
+        @a = 3
+    end
+end
+
+v = A.new()
+puts v.a
