@@ -4,7 +4,7 @@ require_relative "people"
 
 class Vallerie
 
-    @@version = 4
+    @@version = 5
 
     attr_reader :lastMessage
     attr_reader :lastAnswer
