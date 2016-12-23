@@ -18,9 +18,8 @@ class Wisdom
     # :toString: Convert Knowledge to string.
     # :getBestAnswer: Get best answer based for one message.
     # :sendFeedback: Send feedback to an answer.
+    # :getMessage: Get one message by id.
     # :teach: Teach a new message.
-    # :lastMessage: Stores last received message.
-    # :lastResponse: Stores last sent response.
 
     include Singleton
 
@@ -29,7 +28,15 @@ class Wisdom
         @dbInverted = {}
     end
 
-    def teach(message, answer=nil)
+    def getMessage(mid) 
+        puts mid
+        puts mid
+        puts mid
+        puts mid
+        return @db[mid]
+    end
+
+    def teach(message, answer)
 
         raise ArgumentError, "Invalid Message" unless message.instance_of? Message
         raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
@@ -40,19 +47,17 @@ class Wisdom
         end
 
         # Learn new answer.
-        if not @db[message.analyzer.message].include? answer.message
-            @db[message.analyzer.message][answer.message] = answer
-        end
+        @db[message.analyzer.message].addAnswer(answer)
 
         # Generate inverted index.
-        message.tokens.getAll().each do |tid, token|
+        message.tokens.db.each do |tid, token|
             if not @dbInverted.key?(tid)
                 @dbInverted[tid] = {}
             end
             if not @dbInverted[tid].key? message.analyzer.message
                 @dbInverted[tid][message.analyzer.message] = 0
             end
-            @dbInverted[tid][message.analyzer.message] += token['relevance']
+            @dbInverted[tid][message.analyzer.message] += token.relevance
         end
 
     end
@@ -69,7 +74,7 @@ class Wisdom
 
         # Check inverted index.
         _scores = {}
-        message.tokens.getAll().each do |tid, token|
+        message.tokens.db.each do |tid, token|
             if @dbInverted.key?(tid)
                 @dbInverted[tid].each do |mid, relevance|
                     if not _scores.key?(mid)
@@ -84,25 +89,21 @@ class Wisdom
         _scores = _scores.sort_by {|_key, value| value}
 
         # Remove worst 90% answers.
-        _bestAnswers = []
+        _matches = []
         for i in (_scores.size-1) * 90 / 100 ... _scores.size
-            _bestAnswers.push(_scores[i])
+            _matches.push(_scores[i])
         end
 
         # Calculate the differenc between strings.
-        for i in 0..._bestAnswers.size
-            a = _bestAnswers[i][0]
-            b = message.analyzed
-            _bestAnswers[i][1] = levenshtein(a, b)
+        for i in 0..._matches.size
+            a = _matches[i][0]
+            b = message.analyzer.message
+            _matches[i][1] = diff(a, b)
         end
+        puts _matches
 
         # Retutrn response.
-        _response = {}
-        _response['message'] = _bestAnswers[-1][0]
-        _response['differenciation'] = _bestAnswers[-1][1]
-
-        return _response
-        
+        return getMessage(_matches[-1][0]).getOneAnswer()
         
     end
 
@@ -117,16 +118,11 @@ class Wisdom
         s.concat("===========================================\n")
         s.concat("Inverted Index\n")
         s.concat("===========================================\n")
-        @db.each do |token, score|
-            s.concat("#{token} => #{score}")
+        @dbInverted.each do |tid, score|
+            s.concat("#{tid}: #{score}\n")
         end
         s.concat("\n")
         return s
-    end
-
-    def toString()
-        # Print Message as string.
-        return @db
     end
 
     def diff(first, second)
@@ -157,8 +153,13 @@ end
 if __FILE__ == $0
     w = Wisdom.instance
     p = People.instance.get("martin")
-    m = Message.new("This is the sunshine!")
-    w.teach(p, m, Answer.new("Yes, this is the sunshine!", p))
-    w.teach(p, m, Answer.new("No! this is NOT the sunshine!", p))
-    w.teach(m)
+    m = Message.new("My sunshine!")
+    w.teach(m, Answer.new("Yes, this is the sunshine!", p))
+    w.teach(m, Answer.new("No! this is NOT the sunshine!", p))
+    w.teach(m, Answer.new("Nice SUNSHINE dude!", p))
+    w.teach(m, Answer.new("The North Remembers!", p))
+    m = Message.new("My not so far away sunshine!")
+    w.teach(m, Answer.new("Yeah, definitely right!", p))
+    puts w.toString()
+    puts w.getBestAnswer(Message.new("My sunshine far away")).message
 end

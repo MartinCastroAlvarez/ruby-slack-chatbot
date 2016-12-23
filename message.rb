@@ -19,7 +19,7 @@ class Message
     # :toString: Convert Message to string.
     # :getAnswer: Get answer by id.
     # :addAnswer: Add a new answer if not exists.
-    # :getBestAnswer: Gest best answer for this message.
+    # :getOneAnswer: Gest one weighted random answer for this message.
 
     attr_reader :literal
     attr_reader :analyzer
@@ -43,7 +43,7 @@ class Message
         return @answers[id]
     end
 
-    def getBestAnswer() 
+    def getOneAnswer() 
         _total = 0
         @answers.each do |aid, answer|
             _total += answer.getWeight()
@@ -84,5 +84,5 @@ if __FILE__ == $0
     m.addAnswer(Answer.new("Hi there!!", p))
     m.addAnswer(Answer.new("Hello!!", p))
     puts m.toString()
-    puts m.getBestAnswer().message
+    puts m.getOneAnswer().message
 end

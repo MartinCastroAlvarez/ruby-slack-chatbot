@@ -1,3 +1,4 @@
+require_relative "token"
 
 
 class Tokenizer
@@ -81,35 +82,29 @@ class Tokenizer
         "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves",
     ]
 
-    attr_reader :tokens
+    attr_reader :db
 
     def initialize(sentence)
-
         @db = {}
-
-        # Count stopwords.
         _tokens = sentence.split(" ")
         for i in 0..._tokens.size
             t = _tokens[i]
             if not @db.key?(t)
-                @db[t] = {}
-                @db[t]['name'] = t
-                @db[t]['found'] = 0.0
                 _n = t.length * 1.0
                 if @@STOPWORDS.include? t
-                    _n = 0.1
+                    _n = t.length * 0.4
                 end
-                @db[t]['relevance'] = _n / sentence.size
+                r = 1000.0 * _n / sentence.size
+                @db[t] = Token.new(t, 0.0, r)
             end
-            @db[t]['found'] += 1
-            @db[t]['relevance'] /= 2.0
+            @db[t].found += 1
+            @db[t].relevance /= 2.0
         end
-
     end
 
     def getRelevance(tokenID)
         if @db.key?(tokenID)
-            return @db[tokenID]['relevance']
+            return @db[tokenID].relevance
         end
         return 0.0
     end
@@ -118,8 +113,8 @@ class Tokenizer
         s = ""
         s.concat("Tokenizer\n")
         s.concat("-----------------------------\n")
-        @db.each do |name, token|
-            s.concat("#{name} found=#{token['found']} relevance=#{token['relevance']}\n")
+        @db.each do |tid, token|
+            s.concat("#{token.name} found=#{token.found} relevance=#{token.relevance}\n")
         end
         s.concat("\n")
         return s
