@@ -1,4 +1,4 @@
-require_relative "people"
+require_relative "person"
 
 
 class Answer

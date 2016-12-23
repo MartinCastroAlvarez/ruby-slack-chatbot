@@ -1,16 +1,13 @@
-require_relative "tokenizers"
 
 
 class Analyzer
 
     # Attributes
     # ------------------
-    # :literal: Literal message without being analyzed.
     # :connotation: Positive or Negative connotation from -1 to 1.
-    # :analyzed: Message after being analyzed.
+    # :message: Message after being analyzed.
     # :isQuestion: True if this message is a question.
     # :isLearningSuggestion: True if this message is a learning suggestion.
-    # :tokens: Reference to Tokenizer object.
     #
     # Methods
     # ------------------
@@ -56,58 +53,51 @@ class Analyzer
         "you can also say",
     ]
 
-    attr_reader :literal
     attr_reader :connotation
-    attr_reader :analyzed
+    attr_reader :message
     attr_reader :isQuestion
     attr_reader :isLearningSuggestion
-    attr_reader :tokens
 
     def initialize(message)
-        @literal = message
+
         @connotation = 0.0
-        @analyzed = message.downcase
+        @message = message.downcase
         @isQuestion = false
         @isLearningSuggestion = false
-        @stopWords = 0.0
-        @tokens = nil
 
         # Remove learning suggestions.
         for i in 0...@@LEARNING.size
-            if @analyzed =~ /^#{@@LEARNING[i]}: / 
-                @analyzed = @analyzed.sub(@@LEARNING[i], "")
+            if @message =~ /^#{@@LEARNING[i]}: / 
+                @message = @message.sub(@@LEARNING[i], "")
                 @isLearningSuggestion = true
             end
         end
 
         # Remove duplicated spaces.
-        @analyzed = @analyzed.gsub("  ", " ")
-        @analyzed = @analyzed.gsub("  ", " ")
-        @analyzed = @analyzed.gsub("  ", " ")
+        @message = @message.gsub("  ", " ")
+        @message = @message.gsub("  ", " ")
+        @message = @message.gsub("  ", " ")
 
         # Check if message is a question.
-        if @analyzed =~ /\?$/ 
+        if @message =~ /\?$/ 
             @isQuestion = true
         end
 
         # Remove symbols.
         for i in 0...@@SYMBOLS.size
-            @analyzed = @analyzed.gsub(/#{@@SYMBOLS[i]}/, "")
+            @message = @message.gsub(/#{@@SYMBOLS[i]}/, "")
         end
-
-        # Tokenize message.
-        @tokens = Tokenizer.new(@analyzed)
 
         # Determine if message is possitive or negative.
         _found = 0.0
-        _len = @literal.split.size
+        _len = @message.split.size
         for i in 0...@@POSITIVE.size
-            if @analyzed.include? @@POSITIVE[i]
+            if @message.include? @@POSITIVE[i]
                 _found += 1.0
             end
         end
         for i in 0...@@NEGATIVE.size
-            if @analyzed.include? @@NEGATIVE[i]
+            if @message.include? @@NEGATIVE[i]
                 _found -= 3.0
             end
         end
@@ -119,7 +109,14 @@ class Analyzer
 
     def toString()
         # Print Message as string.
-        return "'#{@literal}' => '#{@analyzed}' [#{@connotation}] [Is Question? #{@isQuestion}] [Is Learning? #{@isLearningSuggestion}]"
+        s = ""
+        s.concat("-----------------------------\n")
+        s.concat("Message: #{@message}\n")
+        s.concat("Connotation: #{@connotation}\n")
+        s.concat("Is Question? #{@isQuestion}\n")
+        s.concat("Is Learning? #{@isLearningSuggestion}\n")
+        s.concat("-----------------------------\n")
+        return s
     end
 
 end
