@@ -39,7 +39,7 @@ class Tokenizer
         "from", "further", "furthermore", "get", "gets", "getting", "given", "gives", "go",
         "goes", "going", "gone", "got", "gotten", "greetings", "had", "hadn't", "happens",
         "hardly", "has", "hasn't", "have", "haven't", "having", "he", "he's", "hello",
-        "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein",
+        "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein", "zero"
         "hereupon", "hers", "herself", "hi", "him", "himself", "his", "hither", "hopefully",
         "how", "howbeit", "however", "i'd", "i'll", "i'm", "i've", "ie", "if", "ignored",
         "immediate", "in", "inasmuch", "inc", "indeed", "indicate", "indicated", "indicates",
@@ -79,7 +79,6 @@ class Tokenizer
         "who's", "whoever", "whole", "whom", "whose", "why", "will", "willing", "wish", "with",
         "within", "without", "won't", "wonder", "would", "would", "wouldn't", "yes", "yet",
         "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves",
-        "zero"
     ]
 
     attr_reader :tokens

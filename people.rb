@@ -1,4 +1,5 @@
 require_relative "person"
+require "singleton"
 
 
 class People
@@ -13,6 +14,7 @@ class People
     # :get: Get Person by name.
     # :toString: Convert People to string.
 
+    include Singleton
     @@db = {}
 
     def initialize()
@@ -26,7 +28,7 @@ class People
 
     def get(name)
         if not @db.key?(name)
-            @db[name] = Person(name)
+            @db[name] = Person.new(name)
         end
         return @db[name]
     end
