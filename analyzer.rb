@@ -4,6 +4,7 @@ class Analyzer
 
     # Attributes
     # ------------------
+    # :literal: Message after removing secret commands.
     # :connotation: Positive or Negative connotation from -1 to 1.
     # :message: Message after being analyzed.
     # :isQuestion: True if this message is a question.
@@ -46,13 +47,14 @@ class Analyzer
     ]
 
     @@LEARNING = [
-        "maybe you can say",
-        "you may say",
-        "you may also say",
-        "you can say",
-        "you can also say",
+        "aybe you can say",
+        "ou may say",
+        "ou may also say",
+        "ou can say",
+        "ou can also say",
     ]
 
+    attr_reader :literal
     attr_reader :connotation
     attr_reader :message
     attr_reader :isQuestion
@@ -61,17 +63,21 @@ class Analyzer
     def initialize(message)
 
         @connotation = 0.0
-        @message = message.downcase
+        @message = message
         @isQuestion = false
         @isLearningSuggestion = false
 
         # Remove learning suggestions.
         for i in 0...@@LEARNING.size
-            if @message =~ /^#{@@LEARNING[i]}: / 
-                @message = @message.sub(@@LEARNING[i], "")
+            if @message =~ /^.#{@@LEARNING[i]}: / 
+                @message = @message.gsub(/^.#{@@LEARNING[i]}: /, "")
                 @isLearningSuggestion = true
             end
         end
+
+        # Convert to downcase.
+        @literal = @message
+        @message = @message.downcase
 
         # Remove duplicated spaces.
         @message = @message.gsub("  ", " ")

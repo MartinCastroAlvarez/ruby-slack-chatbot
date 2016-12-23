@@ -32,10 +32,10 @@ class Answer
     def sendFeedback(person, connotation=0)
         raise ArgumentError, "Invalid Person" unless person.instance_of? Person
         @feedback *= 1.1
-        if connotation >= 0
+        if connotation > 0
             @weight *= 1.0 + (0.1 + connotation * person.getInfluence())
-        else
-            @weight /= 1.0 + (0.5 + connotation.abs * person.getInfluence())
+        elsif connotation < 0
+            @weight /= 1.0 + (0.4 + connotation.abs * person.getInfluence())
         end
     end
 

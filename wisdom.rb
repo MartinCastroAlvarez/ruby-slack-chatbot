@@ -19,7 +19,7 @@ class Wisdom
     # :getBestAnswer: Get best answer based for one message.
     # :sendFeedback: Send feedback to an answer.
     # :getMessage: Get one message by id.
-    # :teach: Teach a new message.
+    # :learn: Teach a new message.
 
     include Singleton
 
@@ -32,7 +32,7 @@ class Wisdom
         return @db[mid]
     end
 
-    def teach(message, answer)
+    def learn(message, answer)
         raise ArgumentError, "Invalid Message" unless message.instance_of? Message
         raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
         if not @db.include? message.analyzer.message
@@ -141,12 +141,12 @@ if __FILE__ == $0
     w = Wisdom.instance
     p = People.instance.get("martin")
     m = Message.new("My sunshine!")
-    w.teach(m, Answer.new("Yes, this is the sunshine!", p))
-    w.teach(m, Answer.new("No! this is NOT the sunshine!", p))
-    w.teach(m, Answer.new("Nice SUNSHINE dude!", p))
-    w.teach(m, Answer.new("The North Remembers!", p))
+    w.learn(m, Answer.new("Yes, this is the sunshine!", p))
+    w.learn(m, Answer.new("No! this is NOT the sunshine!", p))
+    w.learn(m, Answer.new("Nice SUNSHINE dude!", p))
+    w.learn(m, Answer.new("The North Remembers!", p))
     m = Message.new("My not so far away sunshine!")
-    w.teach(m, Answer.new("Yeah, definitely right!", p))
+    w.learn(m, Answer.new("Yeah, definitely right!", p))
     puts w.toString()
     puts w.getBestAnswer(Message.new("My sunshine far away")).message
 end
