@@ -16,48 +16,44 @@ class Message
     #
     # Methods
     # ------------------
-    # :sendFeedback: Encourage or discourage an answer.
     # :toString: Convert Message to string.
-    # :teach: Add a new answer to this message.
+    # :getAnswer: Get answer by id.
+    # :addAnswer: Add a new answer if not exists.
     # :getBestAnswer: Gest best answer for this message.
 
     attr_reader :literal
     attr_reader :analyzer
     attr_reader :tokens
-    attr_reader :answers
 
     def initialize(message)
         @literal = message
         @answers = {}
         @analyzer = Analyzer.new(message)
-        @db = Tokenizer.new(@analyzer.message)
+        @tokens = Tokenizer.new(@analyzer.message)
     end
 
-    def teach(answer)
+    def addAnswer(answer) 
         raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
         if not @answers.include? answer.message
             @answers[answer.message] = answer
         end
     end
 
-    def sendFeedback(person, answer, connotation=0)
-        raise ArgumentError, "Invalid Person" unless person.instance_of? Person
-        raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
-        @answers[answer.message].sendFeedback(person, connotation)
+    def getAnswer(id) 
+        return @answers[id]
     end
 
-    def getBestAnswer(person) 
+    def getBestAnswer() 
         _total = 0
         @answers.each do |aid, answer|
             _total += answer.getWeight()
         end
         _rand = rand(0..._total)
         @answers.each do |aid, answer|
-            if _rand < a.getWeight()
-                sendFeedback(person, answer)
+            if _rand < answer.getWeight()
                 return answer
             end
-            _rand = _rand - a.getWeigth()
+            _rand = _rand - answer.getWeight()
         end
         raise RuntimeError, "No answer"
     end
@@ -74,7 +70,7 @@ class Message
             s.concat(answer.toString())
         end
         s.concat("\n")
-        s.concat(@db.toString())
+        s.concat(@tokens.toString())
         s.concat(@analyzer.toString())
         return s
     end
@@ -84,10 +80,9 @@ end
 if __FILE__ == $0
     m = Message.new("Hi! This is Martin! Nice to meet you. How are you?")
     p = People.instance.get("martin")
-    a = Answer.new("Hi, this is my answer!!", p)
-    m.teach(a)
-    m.teach(Answer.new("Hi there!!", p))
-    m.teach(Answer.new("Answer #3", p))
-    m.sendFeedback(p, a, 0.5)
+    m.addAnswer(Answer.new("Hi, this is my answer!!", p))
+    m.addAnswer(Answer.new("Hi there!!", p))
+    m.addAnswer(Answer.new("Hello!!", p))
     puts m.toString()
+    puts m.getBestAnswer().message
 end

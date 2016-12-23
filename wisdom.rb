@@ -1,11 +1,11 @@
-require_relative "messages"
-require_relative "answers"
+require_relative "message"
 require_relative "person"
+require_relative "answer"
 require_relative "people"
 require "singleton"
 
 
-class Knowledge
+class Wisdom
 
     # Attributes
     # ------------------
@@ -18,24 +18,60 @@ class Knowledge
     # :toString: Convert Knowledge to string.
     # :getBestAnswer: Get best answer based for one message.
     # :sendFeedback: Send feedback to an answer.
-    # :teach: Teach a new response.
+    # :teach: Teach a new message.
     # :lastMessage: Stores last received message.
     # :lastResponse: Stores last sent response.
 
     include Singleton
 
-    attr_reader :id
-    attr_reader :answers
+    def initialize()
+        @db = {}
+        @dbInverted = {}
+    end
 
-    # Classmethod
-    def self.getBestAnswer(message)
+    def teach(message, answer=nil)
+
+        raise ArgumentError, "Invalid Message" unless message.instance_of? Message
+        raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
+
+        # Learn new message.
+        if not @db.include? message.analyzer.message
+            @db[message.analyzer.message] = message
+        end
+
+        # Learn new answer.
+        if not @db[message.analyzer.message].include? answer.message
+            @db[message.analyzer.message][answer.message] = answer
+        end
+
+        # Generate inverted index.
+        message.tokens.getAll().each do |tid, token|
+            if not @dbInverted.key?(tid)
+                @dbInverted[tid] = {}
+            end
+            if not @dbInverted[tid].key? message.analyzer.message
+                @dbInverted[tid][message.analyzer.message] = 0
+            end
+            @dbInverted[tid][message.analyzer.message] += token['relevance']
+        end
+
+    end
+
+    def sendFeedback(person, message, answer, connotation=0)
+        raise ArgumentError, "Invalid Person" unless person.instance_of? Person
+        raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
+        raise ArgumentError, "Invalid Message" unless message.instance_of? Message
+        @db[message.analyzer.message].sendFeedback(person, answer, connotation)
+    end
+
+    def getBestAnswer(message)
         raise ArgumentError, "Invalid Message" unless message.instance_of? Message
 
         # Check inverted index.
         _scores = {}
         message.tokens.getAll().each do |tid, token|
-            if @@dbInverted.key?(tid)
-                @@dbInverted[tid].each do |mid, relevance|
+            if @dbInverted.key?(tid)
+                @dbInverted[tid].each do |mid, relevance|
                     if not _scores.key?(mid)
                         _scores[mid] = 0.0
                     end
@@ -65,58 +101,32 @@ class Knowledge
         _response['message'] = _bestAnswers[-1][0]
         _response['differenciation'] = _bestAnswers[-1][1]
 
-        # Update last message and response.
-        @@lastMessage = message.analyzed
-        @@lastResponse = _response['message']
-
         return _response
         
         
     end
 
-    def initialize(message)
-        raise ArgumentError, "Invalid Message" unless message.instance_of? Analyzer
-
-        @id = message.analyzed
-        @answers = {}
-
-        # Learn new message.
-        if not @@db.key?(id)
-            @@db[id] = self
+    def toString()
+        s = ""
+        s.concat("===========================================\n")
+        s.concat("Messages\n")
+        s.concat("===========================================\n")
+        @db.each do |mid, message|
+            s.concat(message.toString())
         end
-
-        # Generate inverted index.
-        message.tokens.tokens.each do |name, token|
-            if not @@dbInverted.key?(name)
-                @@dbInverted[name] = {}
-            end
-            if not @@dbInverted[name].key?(@id)
-                @@dbInverted[name][@id] = 0
-            end
-            @@dbInverted[name][@id] += token['relevance']
+        s.concat("===========================================\n")
+        s.concat("Inverted Index\n")
+        s.concat("===========================================\n")
+        @db.each do |token, score|
+            s.concat("#{token} => #{score}")
         end
-
-    end
-
-    def teach(answer)
-
-        # Learn a new response to a message.
-        if not @@db[message'].key?(id)
-            @@db[id] = self
-        end
-        @answers.push(answer)
-
-    end
-
-    def self.sendFeedback(answer, person, connotation=0)
-        def sendFeedback(answer, person, connotation=0)
-        @@lastMessage = message.analyzed
-        @@lastResponse = _response['message']
+        s.concat("\n")
+        return s
     end
 
     def toString()
         # Print Message as string.
-        return "#{@id} #{@answers}"
+        return @db
     end
 
     def diff(first, second)
@@ -145,12 +155,10 @@ class Knowledge
 end
 
 if __FILE__ == $0
-    Message.new(Analyzer.new("Are you Martin?"))
-    Message.new(Analyzer.new("Is this where Martin lives?"))
-    Message.new(Analyzer.new("I'm Martin"))
-    Message.new(Analyzer.new("My name is Martin. How are you?"))
-    Message.new(Analyzer.new("Hi! This is Martin! Nice to meet you!"))
-    a = Analyzer.new("I am Martin")
-    r = Message.getBestAnswer(a)
-    puts r
+    w = Wisdom.instance
+    p = People.instance.get("martin")
+    m = Message.new("This is the sunshine!")
+    w.teach(p, m, Answer.new("Yes, this is the sunshine!", p))
+    w.teach(p, m, Answer.new("No! this is NOT the sunshine!", p))
+    w.teach(m)
 end

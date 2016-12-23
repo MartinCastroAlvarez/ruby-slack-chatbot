@@ -7,7 +7,7 @@ class Answer
     # Attributes
     # ------------------
     # :message: Human text answer message.
-    # :person: Person who taught this answer.
+    # :person: Teacher name.
     # :feedback: Amount of times this answer received feedback.
     # :weight: Answer weight over time.
     #
@@ -22,10 +22,10 @@ class Answer
 
     def initialize(message, person)
         raise ArgumentError, "Invalid Person" unless person.instance_of? Person
-        @person = person.name
         @message = message
+        @person = person.name
         @feedback = 1
-        @weight = getPerson().getInfluence()
+        @weight = person.getInfluence()
 
     end
 
