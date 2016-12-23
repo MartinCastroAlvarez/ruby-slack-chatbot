@@ -35,13 +35,12 @@ class People
 
     def toString()
         s = ""
-        s.concat("-----------------------------\n")
         s.concat("People\n")
         s.concat("-----------------------------\n")
         @db.each do |name, person|
             s.concat(person.toString())
         end
-        s.concat("-----------------------------\n")
+        s.concat("\n")
         return s
     end
 

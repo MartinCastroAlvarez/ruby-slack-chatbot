@@ -110,12 +110,13 @@ class Analyzer
     def toString()
         # Print Message as string.
         s = ""
+        s.concat("Analyzer\n")
         s.concat("-----------------------------\n")
         s.concat("Message: #{@message}\n")
         s.concat("Connotation: #{@connotation}\n")
         s.concat("Is Question? #{@isQuestion}\n")
         s.concat("Is Learning? #{@isLearningSuggestion}\n")
-        s.concat("-----------------------------\n")
+        s.concat("\n")
         return s
     end
 

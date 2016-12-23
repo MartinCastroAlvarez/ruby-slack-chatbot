@@ -39,7 +39,7 @@ class Tokenizer
         "from", "further", "furthermore", "get", "gets", "getting", "given", "gives", "go",
         "goes", "going", "gone", "got", "gotten", "greetings", "had", "hadn't", "happens",
         "hardly", "has", "hasn't", "have", "haven't", "having", "he", "he's", "hello",
-        "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein", "zero"
+        "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein", "zero",
         "hereupon", "hers", "herself", "hi", "him", "himself", "his", "hither", "hopefully",
         "how", "howbeit", "however", "i'd", "i'll", "i'm", "i've", "ie", "if", "ignored",
         "immediate", "in", "inasmuch", "inc", "indeed", "indicate", "indicated", "indicates",
@@ -116,13 +116,12 @@ class Tokenizer
 
     def toString()
         s = ""
-        s.concat("-----------------------------\n")
         s.concat("Tokenizer\n")
         s.concat("-----------------------------\n")
         @tokens.each do |name, token|
             s.concat("#{name} found=#{token['found']} relevance=#{token['relevance']}\n")
         end
-        s.concat("-----------------------------\n")
+        s.concat("\n")
         return s
     end
 

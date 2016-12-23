@@ -2,6 +2,7 @@ require_relative "tokenizer"
 require_relative "analyzer"
 require_relative "answer"
 require_relative "person"
+require_relative "people"
 
 
 class Message
@@ -47,13 +48,14 @@ class Message
 
     def getBestAnswer(person) 
         _total = 0
-        @answers.each do |answer, a|
-            _total += a.getWeight()
+        @answers.each do |aid, answer|
+            _total += answer.getWeight()
         end
         _rand = rand(0..._total)
-        @answers.each do |answer, a|
+        @answers.each do |aid, answer|
             if _rand < a.getWeight()
-                return a
+                sendFeedback(person, answer)
+                return answer
             end
             _rand = _rand - a.getWeigth()
         end
@@ -62,14 +64,16 @@ class Message
 
     def toString()
         s = ""
-        s.concat("-----------------------------\n")
         s.concat("Message\n")
         s.concat("-----------------------------\n")
-        s.concat("Literal: #{@literal}\n")
-        @tokens.each do |name, token|
-            s.concat("#{name} found=#{token['found']} relevance=#{token['relevance']}\n")
-        end
+        s.concat("#{@literal}\n")
+        s.concat("\n")
+        s.concat("Answers\n")
         s.concat("-----------------------------\n")
+        @answers.each do |aid, answer|
+            s.concat(answer.toString())
+        end
+        s.concat("\n")
         s.concat(@tokens.toString())
         s.concat(@analyzer.toString())
         return s
@@ -79,9 +83,11 @@ end
 
 if __FILE__ == $0
     m = Message.new("Hi! This is Martin! Nice to meet you. How are you?")
-    puts m.toString()
-    p = Person.new("martin")
+    p = People.instance.get("martin")
     a = Answer.new("Hi, this is my answer!!", p)
     m.learn(a)
+    m.learn(Answer.new("Hi there!!", p))
+    m.learn(Answer.new("Answer #3", p))
     m.sendFeedback(p, a, 0.5)
+    puts m.toString()
 end
