@@ -29,37 +29,25 @@ class Wisdom
     end
 
     def getMessage(mid) 
-        puts mid
-        puts mid
-        puts mid
-        puts mid
         return @db[mid]
     end
 
     def teach(message, answer)
-
         raise ArgumentError, "Invalid Message" unless message.instance_of? Message
         raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
-
-        # Learn new message.
         if not @db.include? message.analyzer.message
             @db[message.analyzer.message] = message
+            message.tokens.db.each do |tid, token|
+                if not @dbInverted.key?(tid)
+                    @dbInverted[tid] = {}
+                end
+                if not @dbInverted[tid].key? message.analyzer.message
+                    @dbInverted[tid][message.analyzer.message] = 0
+                end
+                @dbInverted[tid][message.analyzer.message] += 1 + Math.sqrt(token.relevance) / 1000.0
+            end
         end
-
-        # Learn new answer.
         @db[message.analyzer.message].addAnswer(answer)
-
-        # Generate inverted index.
-        message.tokens.db.each do |tid, token|
-            if not @dbInverted.key?(tid)
-                @dbInverted[tid] = {}
-            end
-            if not @dbInverted[tid].key? message.analyzer.message
-                @dbInverted[tid][message.analyzer.message] = 0
-            end
-            @dbInverted[tid][message.analyzer.message] += token.relevance
-        end
-
     end
 
     def sendFeedback(person, message, answer, connotation=0)
@@ -100,7 +88,6 @@ class Wisdom
             b = message.analyzer.message
             _matches[i][1] = diff(a, b)
         end
-        puts _matches
 
         # Retutrn response.
         return getMessage(_matches[-1][0]).getOneAnswer()

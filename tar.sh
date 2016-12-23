@@ -1,3 +1,3 @@
 #!/bin/bash
-rm ./vallerie.tar
-tar -cvf ./vallerie.tar *.rb
+rm ./Vallerie.tar
+tar -cvf ./Vallerie.tar *.rb
