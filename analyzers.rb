@@ -3,7 +3,25 @@ require_relative "tokenizers"
 
 class Analyzer
 
-     # Symbols that are removed from the string.
+    # Attributes
+    # ------------------
+    # :literal: Literal message without being analyzed.
+    # :connotation: Positive or Negative connotation from -1 to 1.
+    # :analyzed: Message after being analyzed.
+    # :isQuestion: True if this message is a question.
+    # :isLearningSuggestion: True if this message is a learning suggestion.
+    # :tokens: Reference to Tokenizer object.
+    #
+    # Methods
+    # ------------------
+    # :toString: Convert Analyzer to string.
+    # 
+    # Static Attributes
+    # ------------------
+    # :SYMBOLS: Symbols that are removed from the string.
+    # :POSITIVE: A list of positive words used to determine whether a message is positive.
+    # :NEGATIVE: A list of negative words used to determine whether a message is negative.
+
      @@SYMBOLS = [
         "_", "-", "\\?", "\!", "\\.", ":", ";", '"', "@", "\\$", 
         "#", "%", "\\^", "&", "\\(", "\\)", "\\[", "\\]", "\\{", "\\}", "<", 
@@ -11,8 +29,6 @@ class Analyzer
         "«", "¿",
     ]
 
-    # A list of positive words that Vallerie uses to 
-    # determine whether a message is positive or negative.
     @@POSITIVE = [
         "like", "love", "cool", "peace", "enjoy", "joy", "trust", "witty", "heaven",
         "awesome", "legit", "great", "liked", "loved", "nice", "good", "welcome",
@@ -24,8 +40,6 @@ class Analyzer
         "breathtaking", "funny", "funnier", "funniest", "thoughtful", "hilarious",
     ]
 
-    # A list of negative words that Vallerie uses to 
-    # determine whether a message is positive or negative.
     @@NEGATIVE = [
         "sucks", "terrible", "awful", "bored", "bore", "boring", "lame", "bitch",
         "bad", "suck", "crap", "hideous", "shameful", "ashamed", "wasted", "hell",
@@ -50,13 +64,13 @@ class Analyzer
     attr_reader :tokens
 
     def initialize(message)
-        @literal = message  # Store original message.
-        @connotation = 0.0  # -1 if message is negative or 1 if message is positive.
-        @analyzed = message.downcase  # Message after being analyzed.
-        @isQuestion = false  # true if message is a question.
-        @isLearningSuggestion = false  # true if message is a learning suggestion.
-        @stopWords = 0.0  # Amount of stopwords.
-        @tokens = nil  # Tokenized message.
+        @literal = message
+        @connotation = 0.0
+        @analyzed = message.downcase
+        @isQuestion = false
+        @isLearningSuggestion = false
+        @stopWords = 0.0
+        @tokens = nil
 
         # Remove learning suggestions.
         for i in 0...@@LEARNING.size

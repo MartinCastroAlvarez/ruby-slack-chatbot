@@ -2,8 +2,19 @@
 
 class Tokenizer
 
-    # List of common English stopwords.
-    # Stopwords have a lower relevance value.
+    # Attributes
+    # ------------------
+    # :tokens: Hash with each token and its relevance.
+    #
+    # Methods
+    # ------------------
+    # :getRelevance: Get relevance for one word in this sentence.
+    # :toString: Convert Tokenizer to string.
+    # 
+    # Static Attributes
+    # ------------------
+    # :STOPWORDS: List of common English stopwords. Stopwords have a lower relevance value.
+
     @@STOPWORDS = [
         "a's", "able", "about", "above", "according", "accordingly", "across",
         "actually", "after", "afterwards", "again", "against", "ain't", "all",
@@ -75,7 +86,7 @@ class Tokenizer
 
     def initialize(sentence)
 
-        @tokens = {}  # Hash of tokens.
+        @tokens = {}
 
         # Count stopwords.
         _tokens = sentence.split(" ")
@@ -87,7 +98,7 @@ class Tokenizer
                 @tokens[t]['found'] = 0.0
                 _n = t.length * 1.0
                 if @@STOPWORDS.include? t
-                    _n = 0.2
+                    _n = 0.1
                 end
                 @tokens[t]['relevance'] = _n / sentence.size
             end
@@ -98,7 +109,6 @@ class Tokenizer
     end
 
     def getRelevance(tokenID)
-        # Get score by token ID.
         if @tokens.key?(tokenID)
             return @tokens[tokenID]['relevance']
         end
@@ -106,11 +116,14 @@ class Tokenizer
     end
 
     def toString()
-        # Print Tokenizer as string.
         s = ""
+        s.concat("-----------------------------\n")
+        s.concat("Tokenizer\n")
+        s.concat("-----------------------------\n")
         @tokens.each do |name, token|
             s.concat("#{name} found=#{token['found']} relevance=#{token['relevance']}\n")
         end
+        s.concat("-----------------------------\n")
         return s
     end
 

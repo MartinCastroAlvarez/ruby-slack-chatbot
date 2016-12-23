@@ -26,24 +26,49 @@ end
 
 class Message
 
+    # Methods
+    # ------------------
+    # :id: Unique ID for this answer.
+    # :answers: All possible answer to this message.
+    #
+    # Attributes
+    # ------------------
+    # :toString: Convert Message to String.
+    # 
+    # Static Attributes
+    # ------------------
+    # :db: Database with all messages.
+    # :dbInverted: Inverted index database for @@db
+    #
+    # Static Methods
+    # ------------------
+    # :getBestAnswer: Get best answer based for one message.
+    # :sendFeedback: Send feedback to an answer.
+    # :teach: Teach a new response.
+    # :lastMessage: Stores last received message.
+    # :lastResponse: Stores last sent response.
+
     @@db = {}
     @@dbInverted = {}
+    @@lastMessage = nil
+    @@lastResponse = nil
 
     attr_reader :id
     attr_reader :answers
 
     # Classmethod
-    def self.getBestAnswer(analyzed_message)
+    def self.getBestAnswer(message)
+        raise ArgumentError, "Invalid Message" unless message.instance_of? Analyzer
 
         # Check inverted index.
         _scores = {}
-        analyzed_message.tokens.tokens.each do |tid, token|
+        message.tokens.tokens.each do |tid, token|
             if @@dbInverted.key?(tid)
                 @@dbInverted[tid].each do |mid, relevance|
                     if not _scores.key?(mid)
                         _scores[mid] = 0.0
                     end
-                    _scores[mid] += relevance * analyzed_message.tokens.getRelevance(tid)
+                    _scores[mid] += relevance * message.tokens.getRelevance(tid)
                 end
             end
         end
@@ -60,7 +85,7 @@ class Message
         # Calculate the differenc between strings.
         for i in 0..._bestAnswers.size
             a = _bestAnswers[i][0]
-            b = analyzed_message.analyzed
+            b = message.analyzed
             _bestAnswers[i][1] = levenshtein(first: a, second: b)
         end
 
@@ -68,15 +93,21 @@ class Message
         _response = {}
         _response['message'] = _bestAnswers[-1][0]
         _response['differenciation'] = _bestAnswers[-1][1]
+
+        # Update last message and response.
+        @@lastMessage = message.analyzed
+        @@lastResponse = _response['message']
+
         return _response
         
         
     end
 
-    def initialize(analyzed_message)
+    def initialize(message)
+        raise ArgumentError, "Invalid Message" unless message.instance_of? Analyzer
 
-        @id = analyzed_message.analyzed # Unique message ID.
-        @answers = {}  # Get all possible answers.
+        @id = message.analyzed
+        @answers = {}
 
         # Learn new message.
         if not @@db.key?(id)
@@ -84,7 +115,7 @@ class Message
         end
 
         # Generate inverted index.
-        analyzed_message.tokens.tokens.each do |name, token|
+        message.tokens.tokens.each do |name, token|
             if not @@dbInverted.key?(name)
                 @@dbInverted[name] = {}
             end
@@ -97,7 +128,19 @@ class Message
     end
 
     def teach(answer)
+
+        # Learn a new response to a message.
+        if not @@db[message'].key?(id)
+            @@db[id] = self
+        end
         @answers.push(answer)
+
+    end
+
+    def self.sendFeedback(answer, person, connotation=0)
+        def sendFeedback(answer, person, connotation=0)
+        @@lastMessage = message.analyzed
+        @@lastResponse = _response['message']
     end
 
     def toString()
