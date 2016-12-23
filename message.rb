@@ -18,7 +18,7 @@ class Message
     # ------------------
     # :sendFeedback: Encourage or discourage an answer.
     # :toString: Convert Message to string.
-    # :learn: Add a new answer to this message.
+    # :teach: Add a new answer to this message.
     # :getBestAnswer: Gest best answer for this message.
 
     attr_reader :literal
@@ -30,10 +30,10 @@ class Message
         @literal = message
         @answers = {}
         @analyzer = Analyzer.new(message)
-        @tokens = Tokenizer.new(@analyzer.message)
+        @db = Tokenizer.new(@analyzer.message)
     end
 
-    def learn(answer)
+    def teach(answer)
         raise ArgumentError, "Invalid Answer" unless answer.instance_of? Answer
         if not @answers.include? answer.message
             @answers[answer.message] = answer
@@ -74,7 +74,7 @@ class Message
             s.concat(answer.toString())
         end
         s.concat("\n")
-        s.concat(@tokens.toString())
+        s.concat(@db.toString())
         s.concat(@analyzer.toString())
         return s
     end
@@ -85,9 +85,9 @@ if __FILE__ == $0
     m = Message.new("Hi! This is Martin! Nice to meet you. How are you?")
     p = People.instance.get("martin")
     a = Answer.new("Hi, this is my answer!!", p)
-    m.learn(a)
-    m.learn(Answer.new("Hi there!!", p))
-    m.learn(Answer.new("Answer #3", p))
+    m.teach(a)
+    m.teach(Answer.new("Hi there!!", p))
+    m.teach(Answer.new("Answer #3", p))
     m.sendFeedback(p, a, 0.5)
     puts m.toString()
 end

@@ -7,7 +7,6 @@ class Answer
     # Attributes
     # ------------------
     # :message: Human text answer message.
-    # :type: Type of answer.
     # :person: Person who taught this answer.
     # :feedback: Amount of times this answer received feedback.
     # :weight: Answer weight over time.
@@ -18,22 +17,13 @@ class Answer
     # :toString: Convert Answer to string.
     # :getWeight: Get answer real weight.
     # :getPerson: Get teacher Person object.
-    # 
-    # Static Attributes
-    # ------------------
-    # :SIMPLE_ANSWER: Simple answer code to a simple question.
-
-
-    @@SIMPLE_ANSWER = "simple_answer"
 
     attr_reader :message
-    attr_reader :type
 
-    def initialize(message, person, type=@@SIMPLE_ANSWER)
+    def initialize(message, person)
         raise ArgumentError, "Invalid Person" unless person.instance_of? Person
         @person = person.name
         @message = message
-        @type = type
         @feedback = 1
         @weight = getPerson().getInfluence()
 
@@ -58,7 +48,7 @@ class Answer
     end
 
     def toString()
-        return "'#{@message}' [#{@type}] [weight=#{getWeight()}] [teacher=#{@person}]\n"
+        return "'#{@message}' [weight=#{getWeight()}] [teacher=#{@person}]\n"
     end
 
 end

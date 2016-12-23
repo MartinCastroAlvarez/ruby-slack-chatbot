@@ -15,7 +15,6 @@ class People
     # :toString: Convert People to string.
 
     include Singleton
-    @@db = {}
 
     def initialize()
         @db = {}
@@ -47,11 +46,10 @@ class People
 end
 
 if __FILE__ == $0
-    p = People.new()
-    p1 = Person.new("martin")
-    p2 = Person.new("castro")
-    p.add(p1)
-    p.add(p2)
-    puts p.get("martin").toString()
-    puts p.toString()
+    p1 = People.instance.get("martin")
+    p2 = People.instance.get("castro")
+    People.instance.add(p1)
+    People.instance.add(p2)
+    puts People.instance.get("martin").toString()
+    puts People.instance.toString()
 end

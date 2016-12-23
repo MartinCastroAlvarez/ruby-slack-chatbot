@@ -4,7 +4,7 @@ class Tokenizer
 
     # Attributes
     # ------------------
-    # :tokens: Hash with each token and its relevance.
+    # :db: Hash with each token and its relevance.
     #
     # Methods
     # ------------------
@@ -85,31 +85,31 @@ class Tokenizer
 
     def initialize(sentence)
 
-        @tokens = {}
+        @db = {}
 
         # Count stopwords.
         _tokens = sentence.split(" ")
         for i in 0..._tokens.size
             t = _tokens[i]
-            if not @tokens.key?(t)
-                @tokens[t] = {}
-                @tokens[t]['name'] = t
-                @tokens[t]['found'] = 0.0
+            if not @db.key?(t)
+                @db[t] = {}
+                @db[t]['name'] = t
+                @db[t]['found'] = 0.0
                 _n = t.length * 1.0
                 if @@STOPWORDS.include? t
                     _n = 0.1
                 end
-                @tokens[t]['relevance'] = _n / sentence.size
+                @db[t]['relevance'] = _n / sentence.size
             end
-            @tokens[t]['found'] += 1
-            @tokens[t]['relevance'] /= 2.0
+            @db[t]['found'] += 1
+            @db[t]['relevance'] /= 2.0
         end
 
     end
 
     def getRelevance(tokenID)
-        if @tokens.key?(tokenID)
-            return @tokens[tokenID]['relevance']
+        if @db.key?(tokenID)
+            return @db[tokenID]['relevance']
         end
         return 0.0
     end
@@ -118,7 +118,7 @@ class Tokenizer
         s = ""
         s.concat("Tokenizer\n")
         s.concat("-----------------------------\n")
-        @tokens.each do |name, token|
+        @db.each do |name, token|
             s.concat("#{name} found=#{token['found']} relevance=#{token['relevance']}\n")
         end
         s.concat("\n")
