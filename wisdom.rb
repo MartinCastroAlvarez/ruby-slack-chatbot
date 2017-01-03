@@ -147,6 +147,7 @@ if __FILE__ == $0
     w.learn(m, Answer.new("The North Remembers!", p))
     m = Message.new("My not so far away sunshine!")
     w.learn(m, Answer.new("Yeah, definitely right!", p))
+    w.learn(m, Answer.new("Right, definitely...", p))
     puts w.toString()
     puts w.getBestAnswer(Message.new("My sunshine far away")).message
 end

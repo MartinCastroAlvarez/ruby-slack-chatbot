@@ -94,7 +94,7 @@ class Tokenizer
                 if @@STOPWORDS.include? t
                     _n = t.length * 0.4
                 end
-                r = 1000.0 * _n / sentence.size
+                r = 10000.0 * _n / sentence.size
                 @db[t] = Token.new(t, 0.0, r)
             end
             @db[t].found += 1
